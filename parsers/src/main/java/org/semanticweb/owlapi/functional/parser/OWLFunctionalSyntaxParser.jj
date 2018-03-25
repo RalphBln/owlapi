@@ -947,7 +947,7 @@ OWLIndividualAxiom SameIndividuals() :
     Set<OWLAnnotation> axiomAnnos;
     Set<OWLAspect> aspects;
 }
-{ <SAMEINDIVIDUAL><OPENPAR>axiomAnnos = AxiomAnnotationSet() aspects=AxiomAspectSet() individuals=IndividualSet()<CLOSEPAR> { return df.getOWLSameIndividualAxiom(individuals, axiomAnnos, , aspects); } }
+{ <SAMEINDIVIDUAL><OPENPAR>axiomAnnos = AxiomAnnotationSet() aspects=AxiomAspectSet() individuals=IndividualSet()<CLOSEPAR> { return df.getOWLSameIndividualAxiom(individuals, axiomAnnos, aspects); } }
 
 OWLIndividualAxiom DifferentIndividuals() :
 {
@@ -1082,7 +1082,7 @@ OWLAnnotationPropertyDomainAxiom AnnotationPropertyDomain() :
     IRI domain;
     OWLAnnotationProperty prop;
     Set<OWLAnnotation> axiomAnnos;
-	
+
 }
 { <ANNOTATIONPROPERTYDOMAIN><OPENPAR> axiomAnnos = AxiomAnnotationSet() prop=AnnotationPropertyIRI() domain=IRI()<CLOSEPAR> { return df.getOWLAnnotationPropertyDomainAxiom(prop, domain, axiomAnnos); } }
 
@@ -1250,10 +1250,10 @@ SWRLDArgument DArg() :
 OWLAspect Aspect() :
 {
   	OWLAdvice advice;
-	Set<OWLAnnotation> annos = new HashSet<>();
+	Set<OWLAnnotation> annos = new HashSet<OWLAnnotation>();
 	OWLAnnotation anno;
 }
-{ (<ASPECT><OPENPAR> ((anno=Annotation(){annos.add(anno)})*) advice=Advice()<CLOSEPAR>) { return df.getOWLAspect(advice, annos); } }
+{ (<ASPECT><OPENPAR> ((anno=Annotation(){annos.add(anno);})*) advice=Advice()<CLOSEPAR>) { return df.getOWLAspect(advice, annos); } }
 
 OWLAspectAssertionAxiom AspectAssertion() :
 {
@@ -1261,14 +1261,21 @@ OWLAspectAssertionAxiom AspectAssertion() :
   	OWLAdvice advice;
 	Set<OWLAnnotation> axiomAnnos;
 }
-{ <ASPECTASSERTION><OPENPAR>axiomAnnos=AxiomAnnotationSet() joinPoint=JoinPoint() advice=advice()<CLOSEPAR> { return df.getOWLAspectAssertionAxiom(joinPoint, advice, axiomAnnos); } }
+{ <ASPECTASSERTION><OPENPAR>axiomAnnos=AxiomAnnotationSet() joinPoint=JoinPoint() advice=Advice()<CLOSEPAR> { return df.getOWLAspectAssertionAxiom(joinPoint, advice, axiomAnnos); } }
 
 Set<OWLAspect> AspectSet() :
 {
-	Set<OWLAspect> aspects = new HashSet<>();
-	OWLAspect aspect;
+	Set<OWLAspect> aspects = new HashSet<OWLAspect>();
+	OWLAspect aspectAssertionAxiom;
 }
-{ (aspect=Aspect(){ aspects.add(aspect); })* { return aspects; } }
+{ (aspectAssertionAxiom=Aspect(){ aspects.add(aspectAssertionAxiom); })* { return aspects; } }
+
+Set<OWLAspect> AxiomAspectSet() :
+{
+    Set<OWLAspect> aspects = new HashSet<OWLAspect>();
+    OWLAspect aspect;
+}
+{ (aspect=Aspect(){ aspects.add(aspect); })*{ return aspects; } }
 
 OWLJoinPoint JoinPoint() :
 {
@@ -1290,25 +1297,25 @@ OWLPointcut Pointcut() :
 
 SPARQLPointCut SPARQLPointcut() :
 {
-	OWLAspect aspect;
+	OWLAspect aspectAssertionAxiom;
 	String query;
 	Set<OWLAnnotation> annotations;
 }
-{ <SPARQLPOINTCUT><OPENPAR>(annotations=AxiomAnnotationSet() aspect=Aspect() query=QuotedString())<CLOSEPAR> { return new SPARQLPointcut(aspect, query, annotations); } }
+{ <SPARQLPOINTCUT><OPENPAR>(annotations=AxiomAnnotationSet() aspectAssertionAxiom=Aspect() query=QuotedString())<CLOSEPAR> { return new SPARQLPointcut(aspectAssertionAxiom, query, annotations); } }
 
 
 OWLModulePointcut ModulePointcut() :
 {
-	OWLAspect aspect;
+	OWLAspect aspectAssertionAxiom;
 	Set<OWLEntity> signature;
 	Set<OWLAnnotation> annotations;
 }
-{ <MODULEPOINTCUT><OPENPAR>(annotations=AxiomAnnotationSet() aspect=Aspect() signature=Signature())<CLOSEPAR> { return new OWLModulePointcut(aspect, query, annotations); } }
+{ <MODULEPOINTCUT><OPENPAR>(annotations=AxiomAnnotationSet() aspectAssertionAxiom=Aspect() signature=Signature())<CLOSEPAR> { return new OWLModulePointcut(aspectAssertionAxiom, query, annotations); } }
 
 Set<OWLEntity> Signature() :
 {
 	OWLEntity iri;
-	Set<OWLEntity> signature = new HashSet<>(); 
+	Set<OWLEntity> signature = new HashSet<OWLEntity>();
 }
 { (iri=EntityIRI(){ signature.add(iri); })* { return signature; } }
 
@@ -1320,8 +1327,8 @@ OWLEntity EntityIRI() :
 
 DLQueryPointcut DLQueryPointcut() :
 {
-	OWLAspect aspect;
+	OWLAspect aspectAssertionAxiom;
 	OWLClassExpression dlQuery;
 	Set<OWLAnnotation> annotations;
 }
-{ <DLQUERYPOINTCUT><OPENPAR>(annotations=AxiomAnnotationSet() aspect=Aspect() dlQuery=ClassExpression() )<CLOSEPAR> { return new DLQueryPointcut(aspect, dlQuery, annotations); } }
+{ <DLQUERYPOINTCUT><OPENPAR>(annotations=AxiomAnnotationSet() aspectAssertionAxiom=Aspect() dlQuery=ClassExpression() )<CLOSEPAR> { return new DLQueryPointcut(aspectAssertionAxiom, dlQuery, annotations); } }
